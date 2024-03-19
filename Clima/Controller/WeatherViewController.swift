@@ -13,7 +13,7 @@ import UIKit
  It 'lists' some 'requirements' which need to be fulfilled by the implementers ~ kind of like an interface
  */
 
-class WeatherViewController: UIViewController, UITextFieldDelegate {
+class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManagerDelegate {
     
     @IBOutlet weak var conditionImageView: UIImageView!
     @IBOutlet weak var temperatureLabel: UILabel!
@@ -28,6 +28,8 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
         
         // Textfield should report back to this ViewController!
         searchTextField.delegate = self;
+        // Our own delegate protocol! Report updates back to this ViewController! This way you don't need to use closures in functions
+        weatherManager.delegate = self;
     }
     
     @IBAction func onSearchPressed(_ sender: UIButton) {
@@ -59,11 +61,26 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     // Via UITextFieldDelegate!
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let locationInput = searchTextField.text {
-            weatherManager.getCurrentWeather(forLocation: locationInput, onResult: onReceiveWeatherData(_:));
+            // Here we add a closure onResult, but also possible to receive 'updates' via our custom WeatherManagerDelegate!
+
+            
+            // Here via closure
+            // weatherManager.getCurrentWeather(forLocation: locationInput, onResult: onReceiveWeatherData(_:));
+            
+            
+            // No closure passed, this will work since we conform to the WeatherManagerDelegate protocol!!!
+            weatherManager.getCurrentWeather(forLocation: locationInput, onResult: nil);
+
             return
         }
         
         searchTextField.text = "";
+    }
+    
+    // Via our custom own WeatherManagerDelegate!!!!!
+    func onWeatherResult(weather: ExternalWeatherData) {
+        print("onWeatherResult :: Via custom delegate protocol!")
+        onReceiveWeatherData(weather);
     }
     
     private func onReceiveWeatherData(_ weather: ExternalWeatherData) {

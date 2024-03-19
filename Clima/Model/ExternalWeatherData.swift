@@ -8,17 +8,17 @@
 
 import Foundation
 
-struct ExternalWeatherData : Decodable {
+public struct ExternalWeatherData : Decodable {
     let name: String;
     let weather: [ExternalWeather];
     let main: ExternalMain;
 }
 
-struct ExternalMain : Decodable {
+public struct ExternalMain : Decodable {
     let temp: Double;
 }
 
-struct ExternalWeather : Decodable {
+public struct ExternalWeather : Decodable {
     let id: Int;
     let main: String;
     let description: String;

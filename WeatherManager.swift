@@ -1,16 +1,21 @@
 import Foundation
 import UIKit;
 
+public protocol WeatherManagerDelegate : NSObjectProtocol {
+    func onWeatherResult(weather: ExternalWeatherData) -> Void
+}
+
 struct WeatherManager {
     private let openWeatherAPIKey = "c624a0a8f0ba8253f25b32d037e34f21";
     private let baseURL = "https://api.openweathermap.org/data/2.5/weather?appid=c624a0a8f0ba8253f25b32d037e34f21&units=metric";
+    var delegate: WeatherManagerDelegate?;
     
-    func getCurrentWeather(forLocation location: String, onResult: @escaping (_ weather: ExternalWeatherData) -> Void) {
+    func getCurrentWeather(forLocation location: String, onResult: ( (_ weather: ExternalWeatherData) -> Void)?) {
         let url = "\(baseURL)&q=\(location)";
         getRequest(url: url, onResult: onResult)
     }
     
-    func getCurrentWeather(lat: Int, lng: Int, onResult: @escaping (_ weather: ExternalWeatherData) -> Void) {
+    func getCurrentWeather(lat: Int, lng: Int, onResult: ((_ weather: ExternalWeatherData) -> Void)?) {
         let url = "\(baseURL)&lat=\(lat)&lng=\(lng)";
         getRequest(url: url, onResult: onResult)
     }
@@ -38,13 +43,19 @@ struct WeatherManager {
         return UIImage(systemName: icon);
     }
     
-    private func getRequest(url: String, onResult: @escaping (_ weather: ExternalWeatherData) -> Void) {
+    private func getRequest(url: String, onResult: ((_ weather: ExternalWeatherData) -> Void)?) {
         if let url = URL(string: url) {
             let session = URLSession(configuration: .default);
             let task = session.dataTask(with: url) { data, response, error in
                 let result = onRequestResult(data: data, response: response, error: error);
                 if let result = result {
-                    onResult(result);
+                    // Via closure
+                    if let onResult = onResult {
+                        onResult(result);
+                    }
+
+                    // or via delegate, cleaner!
+                    delegate?.onWeatherResult(weather: result);
                 }
             };
             task.resume();
