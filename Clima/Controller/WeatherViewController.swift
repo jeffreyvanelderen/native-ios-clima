@@ -8,17 +8,74 @@
 
 import UIKit
 
-class WeatherViewController: UIViewController {
+/**
+ Delegate is not a struct or class, it is a protocol.
+ It 'lists' some 'requirements' which need to be fulfilled by the implementers ~ kind of like an interface
+ */
 
+class WeatherViewController: UIViewController, UITextFieldDelegate {
+    
     @IBOutlet weak var conditionImageView: UIImageView!
     @IBOutlet weak var temperatureLabel: UILabel!
     @IBOutlet weak var cityLabel: UILabel!
+    @IBOutlet weak var searchTextField: UITextField!
+    
+    private var weatherManager = WeatherManager();
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        // Textfield should report back to this ViewController!
+        searchTextField.delegate = self;
     }
+    
+    @IBAction func onSearchPressed(_ sender: UIButton) {
+        print(searchTextField.text!)
+        // Dismiss kb
+        searchTextField.endEditing(true);
+    }
+    
+    // Via UITextFieldDelegate!
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        print(textField.text!);
+        // Dismiss kb
+        searchTextField.endEditing(true);
+        
+        
+        return true;
+    }
+    /**
+     If you had multiple textfield, each one of them would trigger these delegate methods. They pass their reference via the textField param, which you could use to differentiate them.
+     */
+    
+    // Via UITextFieldDelegate!
+    // Good for validation on user input
+//    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+//        // Keep kb open as long as user did not enter any text!
+//        return textField.text != "";
+//    }
+    
+    // Via UITextFieldDelegate!
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if let locationInput = searchTextField.text {
+            weatherManager.getCurrentWeather(forLocation: locationInput, onResult: onReceiveWeatherData(_:));
+            return
+        }
+        
+        searchTextField.text = "";
+    }
+    
+    private func onReceiveWeatherData(_ weather: ExternalWeatherData) {
+        DispatchQueue.main.async {
+            self.cityLabel.text = weather.name;
+            self.temperatureLabel.text = String(Int(round(weather.main.temp)));
 
-
+            if !weather.weather.isEmpty {
+                let currentWeather = weather.weather[0];
+                self.conditionImageView.image = WeatherManager.getIconForWeatherId(currentWeather.id);
+            }
+        }
+    }
 }
 
