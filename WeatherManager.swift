@@ -3,6 +3,7 @@ import UIKit;
 
 public protocol WeatherManagerDelegate : NSObjectProtocol {
     func onWeatherResult(weather: ExternalWeatherData) -> Void
+    func onWeatherFailedWithError(_ error: Error) -> Void;
 }
 
 struct WeatherManager {
@@ -66,6 +67,7 @@ struct WeatherManager {
     private func onRequestResult(data: Data?, response: URLResponse?, error: Error?) -> ExternalWeatherData? {
         if error != nil {
             print("Request error! \(error!)");
+            delegate?.onWeatherFailedWithError(error!);
             return nil;
         }
         
@@ -89,6 +91,7 @@ struct WeatherManager {
             return decoded;
         } catch {
             print("WeatherManager.decode() failed with error '\(error)'");
+            delegate?.onWeatherFailedWithError(error);
         }
         
         return nil;

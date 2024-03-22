@@ -61,8 +61,7 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
     // Via UITextFieldDelegate!
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let locationInput = searchTextField.text {
-            // Here we add a closure onResult, but also possible to receive 'updates' via our custom WeatherManagerDelegate!
-
+            // Here we 'had' a closure onResult, but also possible to receive 'updates' via our custom WeatherManagerDelegate!
             
             // Here via closure
             // weatherManager.getCurrentWeather(forLocation: locationInput, onResult: onReceiveWeatherData(_:));
@@ -81,6 +80,11 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
     func onWeatherResult(weather: ExternalWeatherData) {
         print("onWeatherResult :: Via custom delegate protocol!")
         onReceiveWeatherData(weather);
+    }
+    
+    // Via our custom own WeatherManagerDelegate!!!!!
+    func onWeatherFailedWithError(_ error: Error) {
+        print("onWeatherFailedWithError :: Via custom delegate protocol!", error)
     }
     
     private func onReceiveWeatherData(_ weather: ExternalWeatherData) {
