@@ -45,6 +45,8 @@ class WeatherViewController: UIViewController {
     }
 }
 
+//MARK: - WeatherManagerDelegate
+
 // Moved all of the code related to the WeatherManagerDelegate to this extension! - Takes all responsibility for delegate code to this extension
 extension WeatherViewController : WeatherManagerDelegate {
     // Via our custom own WeatherManagerDelegate!!!!!
@@ -59,6 +61,7 @@ extension WeatherViewController : WeatherManagerDelegate {
     }
 }
 
+//MARK: - UITextFieldDelegate
 
 // Moved all of the code related to the UITextFieldDelegate to this extension - Takes all responsibility for delegate code to this extension
 extension WeatherViewController : UITextFieldDelegate {
