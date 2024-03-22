@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 /**
  Delegate is not a struct or class, it is a protocol.
@@ -19,8 +20,11 @@ class WeatherViewController: UIViewController {
     @IBOutlet weak var temperatureLabel: UILabel!
     @IBOutlet weak var cityLabel: UILabel!
     @IBOutlet weak var searchTextField: UITextField!
+    @IBOutlet weak var refreshLocationButton: UIButton!
     
     private var weatherManager = WeatherManager();
+    private let locationmanager = CLLocationManager();
+    private let geoCoder = CLGeocoder();
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,13 +34,22 @@ class WeatherViewController: UIViewController {
         searchTextField.delegate = self;
         // Our own delegate protocol! Report updates back to this ViewController! This way you don't need to use closures in functions
         weatherManager.delegate = self;
+        
+        // Report back to this class with location updates on locationManager instance updates!
+        locationmanager.delegate = self;
+        
+        // Request location permission
+        locationmanager.requestWhenInUseAuthorization();
+        
+        // Request location - accessible via locationmanager.location
+        locationmanager.requestLocation();
     }
     
     private func onReceiveWeatherData(_ weather: ExternalWeatherData) {
         DispatchQueue.main.async {
             self.cityLabel.text = weather.name;
             self.temperatureLabel.text = String(Int(round(weather.main.temp)));
-
+            
             if !weather.weather.isEmpty {
                 let currentWeather = weather.weather[0];
                 self.conditionImageView.image = WeatherManager.getIconForWeatherId(currentWeather.id);
@@ -87,10 +100,10 @@ extension WeatherViewController : UITextFieldDelegate {
     
     // Via UITextFieldDelegate!
     // Good for validation on user input
-//    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-//        // Keep kb open as long as user did not enter any text!
-//        return textField.text != "";
-//    }
+    //    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+    //        // Keep kb open as long as user did not enter any text!
+    //        return textField.text != "";
+    //    }
     
     // Via UITextFieldDelegate!
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -103,10 +116,47 @@ extension WeatherViewController : UITextFieldDelegate {
             
             // No closure passed, this will work since we conform to the WeatherManagerDelegate protocol!!!
             weatherManager.getCurrentWeather(forLocation: locationInput, onResult: nil);
-
+            
             return
         }
         
         searchTextField.text = "";
     }
+}
+
+//MARK: - CLLocationManagerDelegate
+
+extension WeatherViewController : CLLocationManagerDelegate {
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        locations.forEach { location in
+            print("Got location: lat=\(location.coordinate.latitude) and lng=\(location.coordinate.longitude)")
+        }
+        
+        let currentLocation = locations[locations.count - 1];
+        reverseGeocode(forLocation: currentLocation);
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        // When granting location initially
+        manager.requestLocation();
+    }
+    
+    func reverseGeocode(forLocation location: CLLocation) {
+        geoCoder.reverseGeocodeLocation(location, preferredLocale: .current) { placemarks, error in
+            if let currentPlacemark = placemarks?[0] {
+                self.cityLabel.text = currentPlacemark.locality;
+            }
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Locationmanager didFailWithError", error);
+    }
+    
+    @IBAction func onRefreshLocationPressed(_ sender: UIButton) {
+        locationmanager.requestWhenInUseAuthorization()
+        locationmanager.requestLocation();
+    }
+    
 }
