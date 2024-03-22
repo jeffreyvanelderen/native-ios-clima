@@ -13,7 +13,7 @@ import UIKit
  It 'lists' some 'requirements' which need to be fulfilled by the implementers ~ kind of like an interface
  */
 
-class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManagerDelegate {
+class WeatherViewController: UIViewController {
     
     @IBOutlet weak var conditionImageView: UIImageView!
     @IBOutlet weak var temperatureLabel: UILabel!
@@ -31,6 +31,37 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
         // Our own delegate protocol! Report updates back to this ViewController! This way you don't need to use closures in functions
         weatherManager.delegate = self;
     }
+    
+    private func onReceiveWeatherData(_ weather: ExternalWeatherData) {
+        DispatchQueue.main.async {
+            self.cityLabel.text = weather.name;
+            self.temperatureLabel.text = String(Int(round(weather.main.temp)));
+
+            if !weather.weather.isEmpty {
+                let currentWeather = weather.weather[0];
+                self.conditionImageView.image = WeatherManager.getIconForWeatherId(currentWeather.id);
+            }
+        }
+    }
+}
+
+// Moved all of the code related to the WeatherManagerDelegate to this extension! - Takes all responsibility for delegate code to this extension
+extension WeatherViewController : WeatherManagerDelegate {
+    // Via our custom own WeatherManagerDelegate!!!!!
+    func onWeatherResult(weather: ExternalWeatherData) {
+        print("onWeatherResult :: Via custom delegate protocol!")
+        onReceiveWeatherData(weather);
+    }
+    
+    // Via our custom own WeatherManagerDelegate!!!!!
+    func onWeatherFailedWithError(_ error: Error) {
+        print("onWeatherFailedWithError :: Via custom delegate protocol!", error)
+    }
+}
+
+
+// Moved all of the code related to the UITextFieldDelegate to this extension - Takes all responsibility for delegate code to this extension
+extension WeatherViewController : UITextFieldDelegate {
     
     @IBAction func onSearchPressed(_ sender: UIButton) {
         print(searchTextField.text!)
@@ -75,28 +106,4 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
         
         searchTextField.text = "";
     }
-    
-    // Via our custom own WeatherManagerDelegate!!!!!
-    func onWeatherResult(weather: ExternalWeatherData) {
-        print("onWeatherResult :: Via custom delegate protocol!")
-        onReceiveWeatherData(weather);
-    }
-    
-    // Via our custom own WeatherManagerDelegate!!!!!
-    func onWeatherFailedWithError(_ error: Error) {
-        print("onWeatherFailedWithError :: Via custom delegate protocol!", error)
-    }
-    
-    private func onReceiveWeatherData(_ weather: ExternalWeatherData) {
-        DispatchQueue.main.async {
-            self.cityLabel.text = weather.name;
-            self.temperatureLabel.text = String(Int(round(weather.main.temp)));
-
-            if !weather.weather.isEmpty {
-                let currentWeather = weather.weather[0];
-                self.conditionImageView.image = WeatherManager.getIconForWeatherId(currentWeather.id);
-            }
-        }
-    }
 }
-
