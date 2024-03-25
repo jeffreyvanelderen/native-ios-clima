@@ -16,8 +16,8 @@ struct WeatherManager {
         getRequest(url: url, onResult: onResult)
     }
     
-    func getCurrentWeather(lat: Int, lng: Int, onResult: ((_ weather: ExternalWeatherData) -> Void)?) {
-        let url = "\(baseURL)&lat=\(lat)&lng=\(lng)";
+    func getCurrentWeather(lat: Double, lng: Double, onResult: ((_ weather: ExternalWeatherData) -> Void)?) {
+        let url = "\(baseURL)&lat=\(lat)&lon=\(lng)";
         getRequest(url: url, onResult: onResult)
     }
     

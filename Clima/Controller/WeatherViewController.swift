@@ -129,12 +129,12 @@ extension WeatherViewController : UITextFieldDelegate {
 extension WeatherViewController : CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        locations.forEach { location in
-            print("Got location: lat=\(location.coordinate.latitude) and lng=\(location.coordinate.longitude)")
+        if let lastLocation = locations.last {
+
+            weatherManager.getCurrentWeather(lat: lastLocation.coordinate.latitude, lng: lastLocation.coordinate.longitude, onResult: nil);
+
+            reverseGeocode(forLocation: lastLocation);
         }
-        
-        let currentLocation = locations[locations.count - 1];
-        reverseGeocode(forLocation: currentLocation);
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
