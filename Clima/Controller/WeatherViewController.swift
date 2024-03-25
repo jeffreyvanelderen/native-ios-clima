@@ -129,6 +129,8 @@ extension WeatherViewController : UITextFieldDelegate {
 extension WeatherViewController : CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        locationmanager.stopUpdatingLocation();
+
         if let lastLocation = locations.last {
 
             weatherManager.getCurrentWeather(lat: lastLocation.coordinate.latitude, lng: lastLocation.coordinate.longitude, onResult: nil);
